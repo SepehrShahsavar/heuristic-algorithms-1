@@ -14,3 +14,10 @@ def plot_G(edges, node_color_map):
     nx.draw_networkx_labels(G, pos)
 
     plt.show()
+
+
+# edges = [('A', 'B'), ('B', 'C'), ('A', 'C')]
+# node_color_map = {'A': 'blue',
+#                   'B': 'green',
+#                   'C': 'yellow'}
+# plot_G(edges, node_color_map)
