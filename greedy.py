@@ -2,20 +2,16 @@ from xmlrpc.client import MAXINT
 from plot_G import plot_G
 
 
-# TODO: Reading from file: reading edges alongside heuristic values and costs of each edge
-
 def get_edges():
     n = int(input("Enter the number of edges : "))
     edges = []
-    edge_costs = {}
     for i in range(n):
         line = input(
-            "Enter an edge ({}) with its cost : ".format(i + 1)).split()
-        start, end, cost = line[0], line[2], int(line[3])
+            "Enter an edge ({}) : ".format(i + 1)).split()
+        start, end = line[0], line[2]
         edge = (start, end)
         edges.append(edge)
-        edge_costs[edge] = cost
-    return edges, edge_costs
+    return edges
 
 
 def get_heu_distances(nodes):
@@ -78,11 +74,10 @@ def show_graph():
             node_color_map[node] = "cyan"
         elif status[node] == "visited":
             node_color_map[node] = "grey"
-
     plot_G(edges, node_color_map)
 
 
-edges, edge_costs = get_edges()
+edges = get_edges()
 nodes = find_nodes(edges)
 heu_distances = get_heu_distances(nodes)
 start, goal = find_start(edges, nodes), find_goal(edges, nodes)
@@ -95,47 +90,25 @@ for node in nodes:
 
 status[current] = "current"
 
-shortest_distance_from_start = {}
-shortest_distance_from_start[current] = 0
-
-total_distances = {}
-total_distances[current] = shortest_distance_from_start[current] + \
-    heu_distances[current]
-
 previous_node = {}
-
-possible_next_nodes = []
-
 
 while current != goal:
     childs = get_childs(current)
 
-    for child in childs:
-        if child not in possible_next_nodes:
-            possible_next_nodes.append(child)
-            status[child] = "possible"
-            previous_node[child] = current
-            shortest_distance_from_start[child] = shortest_distance_from_start[current] + \
-                edge_costs[(current, child)]
-            total_distances[child] = shortest_distance_from_start[child] + \
-                heu_distances[child]
-        else:
-            temp = shortest_distance_from_start[current] + \
-                edge_costs((current, child)) + heu_distances[child]
-            if total_distances[child] > temp:
-                shortest_distance_from_start[child] = shortest_distance_from_start[current] + \
-                    edge_costs[(current, child)]
-                total_distances[child] = temp
-                previous_node[child] = current
-
     min_node = None
     min_distance = MAXINT
-    for node in possible_next_nodes:
-        if total_distances[node] < min_distance:
-            min_distance = total_distances[node]
-            min_node = node
+    for child in childs:
+        status[child] = "possible"
+        previous_node[child] = current
+        if heu_distances[child] < min_distance:
+            min_distance = heu_distances[child]
+            min_node = child
 
     show_graph()
+
+    for child in childs:
+        if child != min_node:
+            status[child] = "not visited"
 
     status[current] = "visited"
     current = min_node
