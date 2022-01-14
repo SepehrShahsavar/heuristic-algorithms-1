@@ -121,7 +121,7 @@ while current != goal:
                 heu_distances[child]
         else:
             temp = shortest_distance_from_start[current] + \
-                edge_costs((current, child)) + heu_distances[child]
+                edge_costs[(current, child)] + heu_distances[child]
             if total_distances[child] > temp:
                 shortest_distance_from_start[child] = shortest_distance_from_start[current] + \
                     edge_costs[(current, child)]
@@ -136,7 +136,7 @@ while current != goal:
             min_node = node
 
     show_graph()
-
+    possible_next_nodes.remove(min_node)
     status[current] = "visited"
     current = min_node
     status[current] = "current"
