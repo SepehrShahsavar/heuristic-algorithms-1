@@ -1,4 +1,3 @@
-from tracemalloc import start
 import pygame
 from pygame.locals import KEYDOWN, K_q
 import sys
