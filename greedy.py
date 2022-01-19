@@ -56,6 +56,15 @@ def find_edges(grid):
                     edges.append((start_node, str((i + 1) * ROW + j - 1)))
                 if i != ROW - 1 and j != COL - 1 and grid[i + 1][j + 1] != "blocked":
                     edges.append((start_node, str((i + 1) * ROW + j + 1)))
+                    
+                if i != 0 and grid[i - 1][j] != "blocked":
+                    edges.append((start_node, str((i - 1) * ROW + j)))
+                if i != 0 and j != 0 and grid[i - 1][j - 1] != "blocked":
+                    edges.append((start_node, str((i - 1) * ROW + j - 1)))
+                if i != 0 and j != COL - 1 and grid[i - 1][j + 1] != "blocked":
+                    edges.append((start_node, str((i - 1) * ROW + j + 1)))
+                
+                
     return edges
 
 
@@ -118,16 +127,16 @@ for i in range(ROW):
         row.append("not visited")
     grid.append(row)
 
-for i in range(1, 20, 1):
+for i in range(0, 20, 1):
     for j in range(1, 20, 1):
         grid[i][j] = "blocked"
 
-for i in range(25, 40, 1):
+for i in range(21, 40, 1):
     for j in range(1, 30, 1):
         grid[i][j] = "blocked"
         
-for i in range(6, 26, 1):
-    for j in range(30, 40, 1):
+for i in range(0, 21, 1):
+    for j in range(21, 40, 1):
         grid[i][j] = "blocked"
 
 

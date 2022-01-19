@@ -56,6 +56,13 @@ def find_edges(grid):
                     edges.append((start_node, str((i + 1) * ROW + j - 1)))
                 if i != ROW - 1 and j != COL - 1 and grid[i + 1][j + 1] != "blocked":
                     edges.append((start_node, str((i + 1) * ROW + j + 1)))
+                    
+                if i != 0 and grid[i - 1][j] != "blocked":
+                    edges.append((start_node, str((i - 1) * ROW + j)))
+                if i != 0 and j != 0 and grid[i - 1][j - 1] != "blocked":
+                    edges.append((start_node, str((i - 1) * ROW + j - 1)))
+                if i != 0 and j != COL - 1 and grid[i - 1][j + 1] != "blocked":
+                    edges.append((start_node, str((i - 1) * ROW + j + 1)))
     return edges
 
 
