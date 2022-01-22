@@ -23,6 +23,12 @@ class Node:
         self.right = None
 
 
+class Tree:
+    def __init__(self, root):
+        self.root = root
+        self.fitness = 0
+
+
 def inorder(node: Node):
     if node:
         inorder(node.left)
@@ -144,7 +150,26 @@ def calculateExpressionTree(root: Node):
         return div(left_sum, right_sum)
 
 
+def calculateFitness():
+    t_list = []
+    for i in range(0, population_size):
+        t = Tree(forest[i])
+        fx = calculateExpressionTree(t.root)
+        err = 0
+        if type(fx) is int or type(fx) is float:
+            for j in range(0, 100):
+                err += (fx - y_true[j]) ** 2
+        else:
+            for j in range(0, 100):
+                err += (fx[j] - y_true[j])**2
+        t.fitness = err
+        t_list.append(t)
+    return t_list
+
 forest = generateRandomForest()
 inorder(forest[0])
 print('\n')
 print(calculateExpressionTree(forest[0]))
+calculatedFitnessList = calculateFitness()
+for i in calculatedFitnessList:
+    print(i.fitness)
