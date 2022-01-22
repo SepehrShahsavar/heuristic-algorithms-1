@@ -3,7 +3,7 @@ import numpy as np, random
 # Terminal set U [0-9]
 terminal_set = ['X', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 # Function set
-function_set = ['+', '-', '*', '**', '%']
+function_set = ['+', '-', '*', '%']
 # Population size
 population_size = 5
 # Testing period
@@ -55,7 +55,7 @@ def randomOperatorOrOperand(depth):
             data_type = 'operand'
             return value, data_type
         else:
-            value = function_set[int(np.random.rand() * 6) % 5]
+            value = function_set[int(np.random.rand() * 5) % 4]
             data_type = 'operator'
             return value, data_type
 
@@ -113,7 +113,38 @@ def generateRandomForest():
 
     return forest_
 
-#safe division
+
+# safe division
+def div(x, y):
+    try:
+        return x / y
+    except ZeroDivisionError:
+        return 1
+
+
+def calculateExpressionTree(root: Node):
+    if root is None:
+        return 0
+    if root.left is None and root.right is None:
+        if root.data == 'X':
+            return x
+        else:
+            return int(root.data)
+
+    left_sum = calculateExpressionTree(root.left)
+    right_sum = calculateExpressionTree(root.right)
+
+    if root.data == '+':
+        return left_sum + right_sum
+    if root.data == '-':
+        return left_sum - right_sum
+    if root.data == '*':
+        return left_sum * right_sum
+    if root.data == '%':
+        return div(left_sum, right_sum)
+
 
 forest = generateRandomForest()
 inorder(forest[0])
+print('\n')
+print(calculateExpressionTree(forest[0]))
