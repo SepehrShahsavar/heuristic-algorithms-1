@@ -1,9 +1,10 @@
 import copy
 
 import numpy as np, pandas as pd
-import sys , threading
-sys.setrecursionlimit(10000) # max depth of recursion
-threading.stack_size(2**20)
+import sys, threading
+
+sys.setrecursionlimit(10000)  # max depth of recursion
+threading.stack_size(2 ** 20)
 # Terminal set U [0-9]
 terminal_set = ['X', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 # Function set
@@ -16,6 +17,8 @@ x = np.linspace(-1, 1, 100)
 y_true = x ** 3 - x ** 2 + x - 3
 # Max depth
 max_depth = 5
+# elite_size
+elite_size = int(population_size * 0.1)
 
 
 class Node:
@@ -25,7 +28,7 @@ class Node:
         self.type = type
         self.parent = None  # must be operator or null
         self.right = None
-        self.id = np.random.rand()*1000000
+        self.id = np.random.rand() * 1000000
 
     def __eq__(self, other):
         if not isinstance(other, Node):
@@ -164,10 +167,10 @@ def calculateExpressionTree(root: Node):
         return div(left_sum, right_sum)
 
 
-def calculateFitness():
+def calculateFitness(forest):
     t_list = []
     fitness_sum = 0
-    for i in range(0, population_size):
+    for i in range(0, len(forest)):
         t = Tree(forest[i])
         fx = calculateExpressionTree(t.root)
         err = 0
@@ -188,7 +191,7 @@ def key(e):
     return e.fitness
 
 
-def selection(elite_size, fitness_sum):
+def selection(elite_size, fitness_sum, calculatedFitnessList):
     calculatedFitnessList.sort(key=key, reverse=True)
     pool = []
     res = []
@@ -199,7 +202,7 @@ def selection(elite_size, fitness_sum):
         pick = int(np.random.rand() * 100)
         for tree in calculatedFitnessList:
             rnd = int(np.random.rand() * 100)
-            if div(pick,rnd) > 1:
+            if div(pick, rnd) > 1:
                 pool.append(tree)
                 break
 
@@ -230,7 +233,9 @@ def inorderString(root, s):
 def getRandomNode(root):
     s = []
     inorderString(root, s)
-    n = getNode(root, s[int(np.random.rand() * len(s))])
+    # print(len(s))
+    index = int(np.random.rand() * len(s))
+    n = getNode(root, s[index])
     return n
 
 
@@ -276,9 +281,9 @@ def breed(root1: Node, root2: Node):
     return copy_root
 
 
-def breedPopulation(elite_size):
+def breedPopulation(elite_size, fitness_sum, calculatedFitnessList):
     children = []
-    matingpool = selection(elite_size, fitness_sum)
+    matingpool = selection(elite_size, fitness_sum, calculatedFitnessList)
     length = len(matingpool) - elite_size
     for i in range(0, elite_size):
         children.append(matingpool[i].root)
@@ -287,21 +292,68 @@ def breedPopulation(elite_size):
     for i in range(0, length):
         child = breed(matingpool[i].root, matingpool[len(matingpool) - i - 1].root)
         children.append(child)
-    print('************')
+    print('********')
     return children
 
 
-forest = generateRandomForest()
+def mutate(root, mutationRate):
+    # inorder(root)
+    # print()
+    if np.random.rand() < mutationRate:
+        node = getRandomNode(root)
+        # inorder(node)
+        # print()
+        new_node = Node('0', 'null')
+        mutateNode = generateRandomExprTree(new_node)
+        # inorder(mutateNode)
+        # print()
+        swapSubtrees(root, node, mutateNode)
+        # inorder(root)
+    return root
+
+
+def mutatePopulation(population):
+    mutatePop = []
+    for i in range(0, len(population)):
+        mutate_child = mutate(population[i], 0.5)
+        mutatePop.append(mutate_child)
+    return mutatePop
+
+
+def nextgenaration(forest):
+    calculatedFitnessList, fitness_sum = calculateFitness(forest)
+    childrens = breedPopulation(elite_size, fitness_sum, calculatedFitnessList)
+    nextGen = mutatePopulation(childrens)
+    return nextGen
+
+
+def geneticProgramming():
+    forest = generateRandomForest()
+    forest = nextgenaration(forest)
+    final, sum_fit = calculateFitness(forest)
+    tree = copy.deepcopy(final[0])
+    for i in range(0, 5000):
+        forest = nextgenaration(forest)
+        final , sum_fit = calculateFitness(forest)
+        if tree.fitness > final[0].fitness:
+            tree = tree = copy.deepcopy(final[0])
+
+    inorder(tree.root)
+    print()
+    print("final fitness: " + str(tree.fitness))
+
+geneticProgramming()
+
 
 # inorder(forest[0])
 # print()
 # inorder(forest[1])
 # print()
-calculatedFitnessList, fitness_sum = calculateFitness()
-childrens = breedPopulation(2)
-for t in childrens:
-    inorder(t)
-    print()
+
+# childrens = breedPopulation(2)
+# for t in childrens:
+#     inorder(t)
+#     print()
 
 # for tree in forest:
 #     inorder(tree)
