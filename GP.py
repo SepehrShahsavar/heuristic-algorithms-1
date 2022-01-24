@@ -1,11 +1,15 @@
-import numpy as np, random
+import copy
 
+import numpy as np, pandas as pd
+import sys , threading
+sys.setrecursionlimit(10000) # max depth of recursion
+threading.stack_size(2**20)
 # Terminal set U [0-9]
 terminal_set = ['X', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 # Function set
 function_set = ['+', '-', '*', '%']
 # Population size
-population_size = 5
+population_size = 500
 # Testing period
 x = np.linspace(-1, 1, 100)
 # Target polynomial
@@ -21,6 +25,13 @@ class Node:
         self.type = type
         self.parent = None  # must be operator or null
         self.right = None
+        self.id = np.random.rand()*1000000
+
+    def __eq__(self, other):
+        if not isinstance(other, Node):
+            return NotImplemented
+
+        return self.id == other.id
 
 
 class Tree:
@@ -105,17 +116,20 @@ def addLeafNode(root: Node, node: Node):
                     node.parent = last_operator_leaf.right
 
 
+def generateRandomExprTree(tree):
+    value, data_type = randomOperatorOrOperand((getDepth(tree) + 1 >= max_depth))
+    addLeafNode(tree, Node(value, data_type))
+    while getFirstFreeOperatorLeafNode(tree) is not None:
+        value, data_type = randomOperatorOrOperand((getDepth(tree) + 1 >= max_depth))
+        addLeafNode(tree, Node(value, data_type))
+    return tree
+
+
 def generateRandomForest():
     forest_ = []
     for i in range(0, population_size):
-        for i in range(0, 5):
-            tree = Node('0', 'null')
-            value, data_type = randomOperatorOrOperand((getDepth(tree) + 1 >= max_depth))
-            addLeafNode(tree, Node(value, data_type))
-            while getFirstFreeOperatorLeafNode(tree) is not None:
-                value, data_type = randomOperatorOrOperand((getDepth(tree) + 1 >= max_depth))
-                addLeafNode(tree, Node(value, data_type))
-            forest_.append(tree)
+        tree = Node('0', 'null')
+        forest_.append(generateRandomExprTree(tree))
 
     return forest_
 
@@ -124,7 +138,7 @@ def generateRandomForest():
 def div(x, y):
     try:
         return x / y
-    except ZeroDivisionError:
+    except ZeroDivisionError as e:
         return 1
 
 
@@ -152,6 +166,7 @@ def calculateExpressionTree(root: Node):
 
 def calculateFitness():
     t_list = []
+    fitness_sum = 0
     for i in range(0, population_size):
         t = Tree(forest[i])
         fx = calculateExpressionTree(t.root)
@@ -161,15 +176,144 @@ def calculateFitness():
                 err += (fx - y_true[j]) ** 2
         else:
             for j in range(0, 100):
-                err += (fx[j] - y_true[j])**2
+                err += (fx[j] - y_true[j]) ** 2
+        fitness_sum += err
         t.fitness = err
         t_list.append(t)
-    return t_list
+
+    return t_list, fitness_sum
+
+
+def key(e):
+    return e.fitness
+
+
+def selection(elite_size, fitness_sum):
+    calculatedFitnessList.sort(key=key, reverse=True)
+    pool = []
+    res = []
+    for i in range(0, elite_size):
+        pool.append(calculatedFitnessList[i])
+        res.append(calculatedFitnessList[i])
+    for i in range(0, len(calculatedFitnessList) - elite_size):
+        pick = int(np.random.rand() * 100)
+        for tree in calculatedFitnessList:
+            rnd = int(np.random.rand() * 100)
+            if div(pick,rnd) > 1:
+                pool.append(tree)
+                break
+
+    for i in pool:
+        if i not in res:
+            res.append(i)
+    return res
+
+
+def getNode(root, value):
+    if root is None:
+        return None
+    if root.data == value:
+        return root
+    n = getNode(root.left, value)
+    if n is not None:
+        return n
+    return getNode(root.right, value)
+
+
+def inorderString(root, s):
+    if root:
+        inorderString(root.left, s)
+        s.append(root.data)
+        inorderString(root.right, s)
+
+
+def getRandomNode(root):
+    s = []
+    inorderString(root, s)
+    n = getNode(root, s[int(np.random.rand() * len(s))])
+    return n
+
+
+def swapSubtrees(root: Node, subtree1: Node, subtree2: Node):
+    current = root
+    stack = []
+    while True:
+        if current is not None:
+            stack.append(current)
+            current = current.left
+        elif stack:
+            current = stack.pop()
+            if current.__eq__(subtree1):
+                current.data = subtree2.data
+                current.left = subtree2.left
+                current.right = subtree2.right
+                break
+
+            current = current.right
+        else:
+            break
+
+
+def breed(root1: Node, root2: Node):
+    g1 = getRandomNode(root1)
+    g2 = getRandomNode(root2)
+    copy_root = copy.deepcopy(root1)
+    # inorder(root1)
+    # print()
+    # inorder(root2)
+    # print()
+    # print('*************')
+    # inorder(g1)
+    # print()
+    # inorder(g2)
+    # print()
+    # print('***************')
+    swapSubtrees(copy_root, g1, g2)
+    # inorder(copy_root)
+    # print()
+    # inorder(root2)
+    # print()
+    return copy_root
+
+
+def breedPopulation(elite_size):
+    children = []
+    matingpool = selection(elite_size, fitness_sum)
+    length = len(matingpool) - elite_size
+    for i in range(0, elite_size):
+        children.append(matingpool[i].root)
+        # inorder(matingpool[i].root)
+        # print()
+    for i in range(0, length):
+        child = breed(matingpool[i].root, matingpool[len(matingpool) - i - 1].root)
+        children.append(child)
+    print('************')
+    return children
+
 
 forest = generateRandomForest()
-inorder(forest[0])
-print('\n')
-print(calculateExpressionTree(forest[0]))
-calculatedFitnessList = calculateFitness()
-for i in calculatedFitnessList:
-    print(i.fitness)
+
+# inorder(forest[0])
+# print()
+# inorder(forest[1])
+# print()
+calculatedFitnessList, fitness_sum = calculateFitness()
+childrens = breedPopulation(2)
+for t in childrens:
+    inorder(t)
+    print()
+
+# for tree in forest:
+#     inorder(tree)
+#     print('\n')
+#     h = int(np.random.rand() * getDepth(tree))
+#     print(h)
+#     node = getRandomNode(tree, h)
+#     inorder(node)
+
+# for i in calculatedFitnessList:
+#     print(i.fitness)
+# print("******")
+# p = selection(2, fitness_sum)
+# for r in p:
+#     print(r.fitness)
