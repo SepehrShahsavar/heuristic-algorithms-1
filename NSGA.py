@@ -1,3 +1,4 @@
+from http.client import EXPECTATION_FAILED
 import random as rn
 import numpy as np
 import matplotlib.pyplot as plt
@@ -159,10 +160,13 @@ def pareto_front_finding(fitness_values, pop_index):
 def selection(pop, fitness_values, pop_size):
     
     pop_index_0 = np.arange(pop.shape[0])   # unselected pop ids
+    
     pop_index = np.arange(pop.shape[0])     # all pop ids. len = len(pop_size)
     pareto_front_index = []
     
     while len(pareto_front_index) < pop_size:   # pop_size = initial_pop_size
+        if len(pop_index_0) == 0:
+            break 
         new_pareto_front = pareto_front_finding(fitness_values[pop_index_0, :], pop_index_0)
         total_pareto_size = len(pareto_front_index) + len(new_pareto_front)
 
@@ -180,11 +184,25 @@ def selection(pop, fitness_values, pop_size):
 
     return selected_pop     # arr(pop_size x n_var)
 
+
+def constraint(pop):
+    new_pop = np.copy(pop)
+    delete_index = []
+    for i,x in enumerate(new_pop):
+        r = x[0]
+        h = x[1]
+        V = (np. pi / 3) * (r ** 2) * h
+        if V < 200:
+            delete_index.append(i)
+    new_pop = np.delete(new_pop, delete_index, 0)
+    return new_pop
+        
+
 # Parameters
 n_var = 2                   # chromosome has 3 coordinates/genes
 lb = [0, 0]
 ub = [10, 20]
-pop_size = 150              # initial number of chormosomes
+pop_size = 20              # initial number of chormosomes
 rate_crossover = 20         # number of chromosomes that we apply crossower to
 rate_mutation = 20          # number of chromosomes that we apply mutation to
 rate_local_search = 10      # number of chromosomes that we apply local_search to
@@ -206,6 +224,7 @@ for i in range(maximum_generation):
     pop = np.append(pop, offspring_from_mutation, axis=0)
     pop = np.append(pop, offspring_from_local_search, axis=0)
     # print(pop.shape)
+    pop = constraint(pop)
     fitness_values = evaluation(pop)
     pop = selection(pop, fitness_values, pop_size)  # we arbitrary set desired pereto front size = pop_size
     print('iteration:', i)
@@ -217,8 +236,9 @@ pareto_front_index = pareto_front_finding(fitness_values, index)
 pop = pop[pareto_front_index, :]
 print("_________________")
 print("Optimal solutions:")
-print("       x1               x2                 x3")
+print("       r               h")
 print(pop) # show optimal solutions
+print(pop.shape)
 fitness_values = fitness_values[pareto_front_index]
 print("______________")
 print("Fitness values:")
