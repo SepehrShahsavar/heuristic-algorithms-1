@@ -126,16 +126,20 @@ for i in range(ROW):
         row.append("not visited")
     grid.append(row)
 
-for i in range(0, 20, 1):
+for i in range(1, 20, 1):
     for j in range(1, 20, 1):
         grid[i][j] = "blocked"
 
-for i in range(21, 40, 1):
+for i in range(25, 40, 1):
     for j in range(1, 30, 1):
         grid[i][j] = "blocked"
         
-for i in range(0, 21, 1):
-    for j in range(21, 40, 1):
+for i in range(6, 26, 1):
+    for j in range(30, 40, 1):
+        grid[i][j] = "blocked"
+
+for i in range(30, 45, 1):
+    for j in range(45, COL, 1):
         grid[i][j] = "blocked"
 
 
