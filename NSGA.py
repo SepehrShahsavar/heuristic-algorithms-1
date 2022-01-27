@@ -248,7 +248,7 @@ rate_mutation = 20          # number of chromosomes that we apply mutation to
 rate_local_search = 10      # number of chromosomes that we apply local_search to
 step_size = 0.1             # coordinate displacement during local_search
 maximum_generation = 50   # number of iterations
-num_runs = 50
+num_runs = 200
 # pop = random_population(n_var, pop_size, lb, ub)    # initial parents population P
 # print(pop.shape)
 
@@ -294,6 +294,26 @@ for j in range(num_runs):
     # print("Fitness values:")
     # print("  objective 1    objective 2")
     # print(fitness_values)
+
+dominant_fittness = []
+dominant_pops = []
+for i in range(len(fitness_values_total)):
+    for j in range(len(fitness_values_total)):
+        value1 = fitness_values_total[i]
+        value2 = fitness_values_total[j]
+        pop1 = pops[i]
+        pop2 = pops[j]
+        if value1 != value2:
+            if value1[0] < value2[0] and value1[1] < value2[1]:
+                if value2 not in dominant_fittness:
+                    dominant_fittness.append(value2)
+                    dominant_pops.append(pop2)
+
+for value in dominant_fittness:
+    fitness_values_total.remove(value)
+for pop in dominant_pops:
+    pops.remove(pop)
+    
 print("_________________")
 print("Optimal solutions:")
 print("       r               h")
