@@ -127,31 +127,31 @@ for i in range(ROW):
         row.append("not visited")
     grid.append(row)
     
-num_objects = int(input("How many objects do you want? "))
-for i in range(num_objects):
-    start_row = random.randint(0, ROW - 1)
-    end_row = random.randint(start_row + 1, ROW - 1)
-    start_col = random.randint(0, COL - 1)
-    end_col = random.randint(start_col + 1, COL - 1)
-    for j in range(start_row, end_row + 1, 1):
-        for k in range(start_col, end_col + 1, 1):
-            grid[j][k] = "blocked"
+# num_objects = int(input("How many objects do you want? "))
+# for i in range(num_objects):
+#     start_row = random.randint(0, ROW - 1)
+#     end_row = random.randint(start_row + 1, ROW - 1)
+#     start_col = random.randint(0, COL - 1)
+#     end_col = random.randint(start_col + 1, COL - 1)
+#     for j in range(start_row, end_row + 1, 1):
+#         for k in range(start_col, end_col + 1, 1):
+#             grid[j][k] = "blocked"
 
-# for i in range(1, 20, 1):
-#     for j in range(1, 20, 1):
-#         grid[i][j] = "blocked"
+for i in range(1, 20, 1):
+    for j in range(1, 20, 1):
+        grid[i][j] = "blocked"
 
-# for i in range(25, 40, 1):
-#     for j in range(1, 30, 1):
-#         grid[i][j] = "blocked"
+for i in range(25, 40, 1):
+    for j in range(1, 30, 1):
+        grid[i][j] = "blocked"
         
-# for i in range(6, 26, 1):
-#     for j in range(30, 40, 1):
-#         grid[i][j] = "blocked"
+for i in range(6, 26, 1):
+    for j in range(30, 40, 1):
+        grid[i][j] = "blocked"
 
-# for i in range(30, 45, 1):
-#     for j in range(45, COL, 1):
-#         grid[i][j] = "blocked"
+for i in range(30, 45, 1):
+    for j in range(45, COL, 1):
+        grid[i][j] = "blocked"
 
 
 ### Graph ###
@@ -161,7 +161,7 @@ start, goal = str(0), str((ROW - 1) * ROW + COL - 1)
 heu_distances = get_heu_distances(nodes)
 
 
-### A* Algorithm ###
+### Greedy Algorithm ###
 current = start
 
 grid[int(current) // ROW][int(current) % ROW] = "current"

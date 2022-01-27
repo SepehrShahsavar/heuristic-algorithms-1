@@ -248,7 +248,7 @@ rate_mutation = 20          # number of chromosomes that we apply mutation to
 rate_local_search = 10      # number of chromosomes that we apply local_search to
 step_size = 0.1             # coordinate displacement during local_search
 maximum_generation = 50   # number of iterations
-num_runs = 200
+num_runs = 100
 # pop = random_population(n_var, pop_size, lb, ub)    # initial parents population P
 # print(pop.shape)
 
