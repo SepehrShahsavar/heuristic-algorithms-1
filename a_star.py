@@ -105,7 +105,6 @@ MAROON = (128,0,0)
 YELLOW = (255,255,0)
 ROW = 50
 COL = 50
-INITIAL_ALIVE = 500
 MAXINT = 10000
 
 
@@ -117,7 +116,7 @@ screen.fill(WHITE)
 pygame.display.update()
 
 
-### The Grid and The Obstacle ###
+### The Grid  ###
 grid = []
 for i in range(ROW):
     row = []
@@ -125,32 +124,33 @@ for i in range(ROW):
         row.append("not visited")
     grid.append(row)
 
+### The Obstacles ###
+# num_objects = int(input("How many objects do you want? "))
+# for i in range(num_objects):
+#     start_row = random.randint(0, ROW - 1)
+#     end_row = random.randint(start_row + 1, ROW - 1)
+#     start_col = random.randint(0, COL - 1)
+#     end_col = random.randint(start_col + 1, COL - 1)
+#     for j in range(start_row, end_row + 1, 1):
+#         for k in range(start_col, end_col + 1, 1):
+#             grid[j][k] = "blocked"
+            
+### OR ####
+for i in range(1, 20, 1):
+    for j in range(1, 20, 1):
+        grid[i][j] = "blocked"
 
-num_objects = int(input("How many objects do you want? "))
-for i in range(num_objects):
-    start_row = random.randint(0, ROW - 1)
-    end_row = random.randint(start_row + 1, ROW - 1)
-    start_col = random.randint(0, COL - 1)
-    end_col = random.randint(start_col + 1, COL - 1)
-    for j in range(start_row, end_row + 1, 1):
-        for k in range(start_col, end_col + 1, 1):
-            grid[j][k] = "blocked"
+for i in range(25, 40, 1):
+    for j in range(1, 30, 1):
+        grid[i][j] = "blocked"
         
-# for i in range(1, 20, 1):
-#     for j in range(1, 20, 1):
-#         grid[i][j] = "blocked"
+for i in range(6, 26, 1):
+    for j in range(30, 40, 1):
+        grid[i][j] = "blocked"
 
-# for i in range(25, 40, 1):
-#     for j in range(1, 30, 1):
-#         grid[i][j] = "blocked"
-        
-# for i in range(6, 26, 1):
-#     for j in range(30, 40, 1):
-#         grid[i][j] = "blocked"
-
-# for i in range(30, 45, 1):
-#     for j in range(45, COL, 1):
-#         grid[i][j] = "blocked"
+for i in range(30, 45, 1):
+    for j in range(45, COL, 1):
+        grid[i][j] = "blocked"
 
 
 ### Graph ###
@@ -200,7 +200,7 @@ while(True):
                     shortest_distance_from_start[child] = shortest_distance_from_start[current] + 1
                     total_distances[child] = shortest_distance_from_start[child] + \
                         heu_distances[child]
-            else:
+            elif child in possible_next_nodes:
                 temp = shortest_distance_from_start[current] + 1 + heu_distances[child]
                 if total_distances[child] > temp:
                     shortest_distance_from_start[child] = shortest_distance_from_start[current] + 1

@@ -1,8 +1,10 @@
-from http.client import EXPECTATION_FAILED
 import random as rn
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+
+
+np.seterr(divide='ignore', invalid='ignore')
 
 # MINIMIZATION
 
@@ -97,7 +99,11 @@ def crowding_calculation(fitness_values):
     pop_size = len(fitness_values[:, 0])
     fitness_value_number = len(fitness_values[0, :])                    # == n of objective functions
     matrix_for_crowding = np.zeros((pop_size, fitness_value_number))    # arr(pop_size x 2) 
+    
+    # print("(fitness_values - fitness_values.min(0)) : \n" + str((fitness_values - fitness_values.min(0))))
+    # print("fitness_values.ptp(0) : \n" + str(fitness_values.ptp(0)))
     normalized_fitness_values = (fitness_values - fitness_values.min(0))/fitness_values.ptp(0)  # arr.ptp(0) array of max elem in each col
+    # print("normalized_fitness_values : \n" + str(normalized_fitness_values))
     
     for i in range(fitness_value_number):
         crowding_results = np.zeros(pop_size)
@@ -196,6 +202,11 @@ def constraint(pop):
             delete_index.append(i)
     new_pop = np.delete(new_pop, delete_index, 0)
     return new_pop
+
+def delete_duplicate(arr):
+    unique_rows = np.unique(arr, axis=0)
+    return unique_rows
+        
         
 
 # Parameters
@@ -207,46 +218,69 @@ rate_crossover = 20         # number of chromosomes that we apply crossower to
 rate_mutation = 20          # number of chromosomes that we apply mutation to
 rate_local_search = 10      # number of chromosomes that we apply local_search to
 step_size = 0.1             # coordinate displacement during local_search
-maximum_generation = 150    # number of iterations
-pop = random_population(n_var, pop_size, lb, ub)    # initial parents population P
-print(pop.shape)
+maximum_generation = 50   # number of iterations
+num_runs = 50
+# pop = random_population(n_var, pop_size, lb, ub)    # initial parents population P
+# print(pop.shape)
 
-
+pops = []
+fitness_values_total = []
 # NSGA-II main loop
-for i in range(maximum_generation):
-    offspring_from_crossover = crossover(pop, rate_crossover)
-    offspring_from_mutation = mutation(pop, rate_mutation)
-    offspring_from_local_search = local_search(pop, rate_local_search, step_size)
-    
-    # we append childrens Q (cross-overs, mutations, local search) to paraents P
-    # having parents in the mix, i.e. allowing for parents to progress to next iteration - Elitism
-    pop = np.append(pop, offspring_from_crossover, axis=0)
-    pop = np.append(pop, offspring_from_mutation, axis=0)
-    pop = np.append(pop, offspring_from_local_search, axis=0)
-    # print(pop.shape)
-    pop = constraint(pop)
-    fitness_values = evaluation(pop)
-    pop = selection(pop, fitness_values, pop_size)  # we arbitrary set desired pereto front size = pop_size
-    print('iteration:', i)
+for j in range(num_runs):
+    pop = random_population(n_var, pop_size, lb, ub)
+    for i in range(maximum_generation):
+        offspring_from_crossover = crossover(pop, rate_crossover)
+        offspring_from_mutation = mutation(pop, rate_mutation)
+        offspring_from_local_search = local_search(pop, rate_local_search, step_size)
+        
+        # we append childrens Q (cross-overs, mutations, local search) to paraents P
+        # having parents in the mix, i.e. allowing for parents to progress to next iteration - Elitism
+        pop = np.append(pop, offspring_from_crossover, axis=0)
+        pop = np.append(pop, offspring_from_mutation, axis=0)
+        pop = np.append(pop, offspring_from_local_search, axis=0)
+        # print(pop.shape)
+        pop = constraint(pop)
+        fitness_values = evaluation(pop)
+        pop = selection(pop, fitness_values, pop_size)  # we arbitrary set desired pereto front size = pop_size
+        # print('iteration:', i)
 
-# Pareto front visualization
-fitness_values = evaluation(pop)
-index = np.arange(pop.shape[0]).astype(int)
-pareto_front_index = pareto_front_finding(fitness_values, index)
-pop = pop[pareto_front_index, :]
+    # Pareto front visualization
+    fitness_values = evaluation(pop)
+    index = np.arange(pop.shape[0]).astype(int)
+    pareto_front_index = pareto_front_finding(fitness_values, index)
+    pop = pop[pareto_front_index, :]
+    pops.append(delete_duplicate(pop).tolist()[0])
+    # print("_________________")
+    # print("Optimal solutions:")
+    # print("       r               h")
+    # print(pop) # show optimal solutions
+    # print(pop.shape)
+    fitness_values = fitness_values[pareto_front_index]
+    fitness_values_total.append(delete_duplicate(fitness_values).tolist()[0])
+    # print([delete_duplicate(fitness_values)])
+    # print("______________")
+    # print("Fitness values:")
+    # print("  objective 1    objective 2")
+    # print(fitness_values)
 print("_________________")
 print("Optimal solutions:")
 print("       r               h")
-print(pop) # show optimal solutions
-print(pop.shape)
-fitness_values = fitness_values[pareto_front_index]
+for pop in pops:
+    print(pop)
 print("______________")
 print("Fitness values:")
 print("  objective 1    objective 2")
-print(fitness_values)
-plt.scatter(fitness_values[:, 0],fitness_values[:, 1], label='Pareto optimal front')
+for value in fitness_values_total:
+    print(value)
+x_axis = []
+y_axis = []
+for value in fitness_values_total:
+    x_axis.append(value[0])
+    y_axis.append(value[1])
+# plt.scatter(fitness_values_total[:][0],fitness_values_total[:][1], label='Pareto optimal front')
+plt.scatter(x_axis, y_axis, label='Pareto optimal front')
 plt.legend(loc='best')
 plt.xlabel('Objective function F1')
 plt.ylabel('Objective function F2')
-plt.grid(b=1)
+plt.grid(visible=1)
 plt.show()
